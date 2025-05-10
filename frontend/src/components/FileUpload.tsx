@@ -46,20 +46,25 @@ const FileUpload: React.FC = () => {
       
       // Upload file to server
       const uploadResponse = await uploadFile(file);
+      console.log('Upload response:', uploadResponse);
+      
       const uploadedFileId = uploadResponse.file_id;
       
       setSuccess('File uploaded successfully. Processing data...');
       
       // Process the uploaded file
-      await processData(uploadedFileId);
+      const processResponse = await processData(uploadedFileId);
+      console.log('Process response:', processResponse);
       
       // Update context with file ID
       setFileId(uploadedFileId);
       setSuccess('Data processed successfully!');
       
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error uploading file:', err);
-      setError('Error uploading or processing file. Please try again.');
+      // Extract error message from response if available
+      const errorMessage = err.response?.data?.detail || 'Error uploading or processing file. Please try again.';
+      setError(errorMessage);
     } finally {
       setIsProcessing(false);
     }

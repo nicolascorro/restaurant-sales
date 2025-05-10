@@ -4,14 +4,23 @@ Main FastAPI application entry point.
 Configures and runs the API server.
 """
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
-# TODO: Import routes
+from api.routes import router
 
 app = FastAPI(title="Restaurant Sales Prediction API")
 
-# TODO: Configure routes
-# TODO: Add CORS middleware
-# TODO: Add exception handlers
+# Configure CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # Frontend URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Include the router with correct prefix
+app.include_router(router)
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

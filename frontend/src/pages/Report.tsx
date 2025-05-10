@@ -37,6 +37,7 @@ const Report: React.FC = () => {
   const { fileId, reportData, setReportData } = useAppContext();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
   
   // Redirect if no fileId is set
   useEffect(() => {
@@ -48,17 +49,28 @@ const Report: React.FC = () => {
   // Generate report if needed
   useEffect(() => {
     const fetchData = async () => {
-      if (fileId && !reportData) {
+      if (fileId && (!reportData || retryCount > 0)) {
         try {
           setLoading(true);
           setError(null);
           
           const data = await generateReport(fileId);
-          setReportData(data.report);
+          setReportData(JSON.stringify(data.report));
+          setRetryCount(0); // Reset retry count on success
           
-        } catch (err) {
+        } catch (err: any) {
           console.error('Error generating report:', err);
-          setError('Failed to generate business report. Please try again.');
+          // Extract error message from response if available
+          const errorMessage = err.response?.data?.detail || 'Failed to generate business report. The server may still be processing your data. Please try again.';
+          setError(errorMessage);
+          
+          // If the error is about required analysis, we might want to retry
+          if ((errorMessage.includes("not been processed") || errorMessage.includes("Required analysis")) && retryCount < 3) {
+            // Wait 2 seconds before retrying
+            setTimeout(() => {
+              setRetryCount(prev => prev + 1);
+            }, 2000);
+          }
         } finally {
           setLoading(false);
         }
@@ -66,7 +78,7 @@ const Report: React.FC = () => {
     };
     
     fetchData();
-  }, [fileId, reportData, setReportData]);
+  }, [fileId, reportData, setReportData, retryCount]);
   
   // Download report as PDF (placeholder function)
   const handleDownloadReport = () => {
@@ -85,6 +97,11 @@ const Report: React.FC = () => {
         <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
           This may take a few moments as we analyze your data and create insights.
         </Typography>
+        {retryCount > 0 && (
+          <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
+            Retrying... (Attempt {retryCount}/3)
+          </Typography>
+        )}
       </Container>
     );
   }
@@ -96,18 +113,28 @@ const Report: React.FC = () => {
         <Alert severity="error" sx={{ mb: 3 }}>
           {error}
         </Alert>
-        <Button 
-          variant="contained" 
-          onClick={() => navigate('/upload')}
-        >
-          Return to Upload
-        </Button>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <Button 
+            variant="contained" 
+            onClick={() => navigate('/forecast')}
+          >
+            View Forecast First
+          </Button>
+          {retryCount < 3 && (
+            <Button 
+              variant="outlined"
+              onClick={() => setRetryCount(prev => prev + 1)}
+            >
+              Retry
+            </Button>
+          )}
+        </Box>
       </Container>
     );
   }
   
-  // Mock data for demonstration
-  const mockReport: ReportData = reportData ? JSON.parse(reportData) : {
+  // Parse the report data
+  const parsedReport: ReportData = reportData ? JSON.parse(reportData) : {
     summary: "This is a placeholder for the AI-generated business summary...",
     insights: [
       "First key insight about the business trends",
@@ -148,7 +175,7 @@ const Report: React.FC = () => {
             <TrendingUpIcon sx={{ mr: 1 }} /> Business Summary
           </Typography>
           <Typography variant="body1" paragraph>
-            {mockReport.summary}
+            {parsedReport.summary}
           </Typography>
         </Box>
         
@@ -157,7 +184,7 @@ const Report: React.FC = () => {
             <LightbulbIcon sx={{ mr: 1 }} /> Key Insights
           </Typography>
           <List>
-            {mockReport.insights.map((insight: string, index: number) => (
+            {parsedReport.insights.map((insight: string, index: number) => (
               <ListItem key={index}>
                 <ListItemIcon>
                   <Chip label={`#${index + 1}`} color="primary" size="small" />
@@ -173,7 +200,7 @@ const Report: React.FC = () => {
             <RecommendIcon sx={{ mr: 1 }} /> Recommendations
           </Typography>
           <List>
-            {mockReport.recommendations.map((recommendation: string, index: number) => (
+            {parsedReport.recommendations.map((recommendation: string, index: number) => (
               <ListItem key={index}>
                 <ListItemIcon>
                   <Chip label={`#${index + 1}`} color="secondary" size="small" />
@@ -189,7 +216,7 @@ const Report: React.FC = () => {
             <TimelineIcon sx={{ mr: 1 }} /> Future Outlook
           </Typography>
           <Typography variant="body1" paragraph>
-            {mockReport.future_outlook}
+            {parsedReport.future_outlook}
           </Typography>
         </Box>
       </Paper>

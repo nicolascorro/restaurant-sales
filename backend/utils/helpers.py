@@ -8,12 +8,13 @@ from datetime import datetime
 import shutil
 from pathlib import Path
 import json
+from fastapi import UploadFile
 
 def generate_file_id() -> str:
     """Generates unique file identifier."""
     return str(uuid.uuid4())
 
-def save_uploaded_file(file_data, filename: str) -> str:
+async def save_uploaded_file(file: UploadFile, filename: str) -> str:
     """Saves uploaded file to disk and returns the saved file path."""
     try:
         # Create the data directory if it doesn't exist
@@ -28,8 +29,9 @@ def save_uploaded_file(file_data, filename: str) -> str:
         save_path = os.path.join(data_dir, saved_filename)
         
         # Save the file
+        contents = await file.read()
         with open(save_path, 'wb') as buffer:
-            shutil.copyfileobj(file_data.file, buffer)
+            buffer.write(contents)
         
         return save_path
     except Exception as e:
@@ -58,7 +60,7 @@ def get_processed_data_directory() -> str:
 def save_processing_metadata(file_id: str, metadata: dict) -> str:
     """Saves metadata about processed files."""
     metadata_dir = Path(get_processed_data_directory()) / 'metadata'
-    metadata_dir.mkdir(exist_ok=True)
+    metadata_dir.mkdir(exist_ok=True, parents=True)
     
     metadata_file = metadata_dir / f"{file_id}_metadata.json"
     
@@ -72,7 +74,8 @@ def save_processing_metadata(file_id: str, metadata: dict) -> str:
 
 def load_processing_metadata(file_id: str) -> dict:
     """Loads metadata for a processed file."""
-    metadata_file = Path(get_processed_data_directory()) / 'metadata' / f"{file_id}_metadata.json"
+    metadata_dir = Path(get_processed_data_directory()) / 'metadata'
+    metadata_file = metadata_dir / f"{file_id}_metadata.json"
     
     if not metadata_file.exists():
         raise FileNotFoundError(f"Metadata file not found for {file_id}")
