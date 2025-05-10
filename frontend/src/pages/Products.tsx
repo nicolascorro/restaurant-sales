@@ -1,5 +1,5 @@
 // src/pages/Products.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { 
   Container, 
   Typography, 
@@ -14,28 +14,28 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Divider
+  Divider,
+  Menu,
+  MenuItem
 } from '@mui/material';
 import DownloadIcon from '@mui/icons-material/Download';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 import ProductsChart from '../components/ProductsChart';
 import { getTopProducts } from '../api/endpoints';
-
-// Define interface for product details
-interface ProductDetail {
-  name: string;
-  category: string;
-  revenue: number;
-  quantity: number;
-  percentage: number;
-}
+import { downloadAsImage, downloadAsPDF, downloadProductsAsCSV } from '../utils/downloadUtils';
+import { ProductDetail } from '../types/ProductDetail';
 
 const Products: React.FC = () => {
   const navigate = useNavigate();
   const { fileId, productsData, setProductsData } = useAppContext();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const tableRef = useRef<HTMLDivElement>(null);
+  
+  // For download menu
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
   
   // Redirect if no fileId is set
   useEffect(() => {
@@ -67,10 +67,30 @@ const Products: React.FC = () => {
     fetchData();
   }, [fileId, productsData, setProductsData]);
   
-  // Download chart as image (placeholder function)
-  const handleDownloadChart = () => {
-    // This would be implemented with a library like html2canvas
-    alert('Download chart functionality would be implemented here');
+  // Handle table download menu
+  const handleTableMenuClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+  
+  const handleTableMenuClose = () => {
+    setAnchorEl(null);
+  };
+  
+  const handleDownloadTableImage = () => {
+    downloadAsImage(tableRef.current, 'product-details');
+    handleTableMenuClose();
+  };
+  
+  const handleDownloadTablePDF = () => {
+    downloadAsPDF(tableRef.current, 'product-details', 'Product Details');
+    handleTableMenuClose();
+  };
+  
+  const handleDownloadTableCSV = () => {
+    if (productsData?.product_details) {
+      downloadProductsAsCSV(productsData.product_details, 'product-details');
+    }
+    handleTableMenuClose();
   };
   
   // Render loading state
@@ -79,7 +99,8 @@ const Products: React.FC = () => {
       <Container maxWidth="lg" sx={{ textAlign: 'center', py: 8 }}>
         <CircularProgress size={60} />
         <Typography variant="h6" sx={{ mt: 2 }}>
-          Analyzing product sales data...
+          Analyzing product sales data... <br/>
+          This shall take no more than a minute.
         </Typography>
       </Container>
     );
@@ -113,23 +134,10 @@ const Products: React.FC = () => {
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
           {/* Products Chart */}
           <Box sx={{ flex: '1 1 45%', minWidth: '300px' }}>
-            <Box sx={{ position: 'relative' }}>
-              <ProductsChart 
-                data={productsData?.chart_data || []} 
-                title="Revenue Contribution by Product"
-              />
-              
-              {productsData && (
-                <Button
-                  variant="outlined"
-                  startIcon={<DownloadIcon />}
-                  onClick={handleDownloadChart}
-                  sx={{ position: 'absolute', top: 16, right: 16 }}
-                >
-                  Download Chart
-                </Button>
-              )}
-            </Box>
+            <ProductsChart 
+              data={productsData?.chart_data || []} 
+              title="Revenue Contribution by Product"
+            />
           </Box>
           
           {/* Product Performance Summary */}
@@ -167,10 +175,39 @@ const Products: React.FC = () => {
         
         {/* Product Details Table */}
         <Box>
-          <Paper elevation={3} sx={{ p: 3 }}>
-            <Typography variant="h6" gutterBottom>
-              Product Details
-            </Typography>
+          <Paper elevation={3} sx={{ p: 3 }} ref={tableRef}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Typography variant="h6">
+                Product Details
+              </Typography>
+              
+              {productsData?.product_details && productsData.product_details.length > 0 && (
+                <>
+                  <Button
+                    variant="outlined"
+                    startIcon={<DownloadIcon />}
+                    onClick={handleTableMenuClick}
+                    size="small"
+                  >
+                    Download
+                  </Button>
+                  
+                  <Menu
+                    anchorEl={anchorEl}
+                    open={open}
+                    onClose={handleTableMenuClose}
+                    MenuListProps={{
+                      'aria-labelledby': 'download-button',
+                    }}
+                  >
+                    <MenuItem onClick={handleDownloadTableImage}>Download as PNG</MenuItem>
+                    <MenuItem onClick={handleDownloadTablePDF}>Download as PDF</MenuItem>
+                    <MenuItem onClick={handleDownloadTableCSV}>Download as CSV</MenuItem>
+                  </Menu>
+                </>
+              )}
+            </Box>
+            
             <Divider sx={{ mb: 2 }} />
             
             {productsData?.product_details && productsData.product_details.length > 0 ? (

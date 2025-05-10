@@ -1,5 +1,5 @@
 // src/components/SalesChart.tsx
-import React from 'react';
+import React, { useRef } from 'react';
 import { 
   LineChart, 
   Line, 
@@ -10,14 +10,48 @@ import {
   Legend, 
   ResponsiveContainer 
 } from 'recharts';
-import { Typography, Paper, Box } from '@mui/material';
+import { 
+  Typography, 
+  Paper, 
+  Box, 
+  Button,
+  Menu,
+  MenuItem
+} from '@mui/material';
+import DownloadIcon from '@mui/icons-material/Download';
+import { downloadAsImage, downloadAsPDF } from '../utils/downloadUtils';
 
 interface SalesChartProps {
   data: any[];
   title?: string;
 }
 
-const SalesChart: React.FC<SalesChartProps> = ({ data, title = 'Monthly Sales Forecast' }) => {
+const SalesChart: React.FC<SalesChartProps> = ({ 
+  data, 
+  title = 'Monthly Sales Forecast'
+}) => {
+  const chartRef = useRef<HTMLDivElement>(null);
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+  
+  const handleDownloadClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+  
+  const handleDownloadClose = () => {
+    setAnchorEl(null);
+  };
+  
+  const handleDownloadImage = () => {
+    downloadAsImage(chartRef.current, 'sales-forecast');
+    handleDownloadClose();
+  };
+  
+  const handleDownloadPDF = () => {
+    downloadAsPDF(chartRef.current, 'sales-forecast', title);
+    handleDownloadClose();
+  };
+  
   // If no data is available, show placeholder
   if (!data || data.length === 0) {
     return (
@@ -30,8 +64,32 @@ const SalesChart: React.FC<SalesChartProps> = ({ data, title = 'Monthly Sales Fo
   }
 
   return (
-    <Paper elevation={3} sx={{ p: 3 }}>
-      <Typography variant="h6" gutterBottom>{title}</Typography>
+    <Paper elevation={3} sx={{ p: 3 }} ref={chartRef}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Typography variant="h6">{title}</Typography>
+        
+        <Button
+          variant="outlined"
+          startIcon={<DownloadIcon />}
+          onClick={handleDownloadClick}
+          size="small"
+        >
+          Download
+        </Button>
+        
+        <Menu
+          anchorEl={anchorEl}
+          open={open}
+          onClose={handleDownloadClose}
+          MenuListProps={{
+            'aria-labelledby': 'download-button',
+          }}
+        >
+          <MenuItem onClick={handleDownloadImage}>Download as PNG</MenuItem>
+          <MenuItem onClick={handleDownloadPDF}>Download as PDF</MenuItem>
+        </Menu>
+      </Box>
+      
       <Box sx={{ height: 400 }}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart

@@ -45,6 +45,7 @@ coverage.xml
 *.xlsx
 *.json
 backend/data/*
+backend/plots/*
 !backend/data/sample_dataset.csv
 
 # React / Node

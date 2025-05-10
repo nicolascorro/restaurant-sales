@@ -12,7 +12,6 @@ import {
   CardContent,
   Divider
 } from '@mui/material';
-import DownloadIcon from '@mui/icons-material/Download';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 import SalesChart from '../components/SalesChart';
@@ -67,19 +66,14 @@ const Forecast: React.FC = () => {
     fetchData();
   }, [fileId, forecastData, setForecastData, retryCount]);
   
-  // Download chart as image (placeholder function)
-  const handleDownloadChart = () => {
-    // This would be implemented with a library like html2canvas
-    alert('Download chart functionality would be implemented here');
-  };
-  
   // Render loading state
   if (loading) {
     return (
       <Container maxWidth="lg" sx={{ textAlign: 'center', py: 8 }}>
         <CircularProgress size={60} />
         <Typography variant="h6" sx={{ mt: 2 }}>
-          Generating sales forecast...
+        Hang tight! We’re generating your sales forecast. <br/> 
+        This usually takes about 1–2 minutes.
         </Typography>
         {retryCount > 0 && (
           <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
@@ -133,23 +127,10 @@ const Forecast: React.FC = () => {
         
         {/* Sales Chart */}
         <Box>
-          <Box sx={{ position: 'relative' }}>
-            <SalesChart 
-              data={forecastData?.chart_data || []} 
-              title="Monthly Sales Forecast"
-            />
-            
-            {forecastData && (
-              <Button
-                variant="outlined"
-                startIcon={<DownloadIcon />}
-                onClick={handleDownloadChart}
-                sx={{ position: 'absolute', top: 16, right: 16 }}
-              >
-                Download Chart
-              </Button>
-            )}
-          </Box>
+          <SalesChart 
+            data={forecastData?.chart_data || []} 
+            title="Monthly Sales Forecast"
+          />
         </Box>
         
         {/* Model Details */}

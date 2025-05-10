@@ -1,5 +1,5 @@
 // src/pages/Report.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { 
   Container, 
   Typography, 
@@ -13,16 +13,20 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
-  Chip
+  Chip,
+  Menu,
+  MenuItem
 } from '@mui/material';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import LightbulbIcon from '@mui/icons-material/Lightbulb';
 import RecommendIcon from '@mui/icons-material/Recommend';
 import TimelineIcon from '@mui/icons-material/Timeline';
 import DownloadIcon from '@mui/icons-material/Download';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 import { generateReport } from '../api/endpoints';
+import { downloadAsPDF, downloadReportAsPDF } from '../utils/downloadUtils';
 
 // Define interfaces for report data
 interface ReportData {
@@ -38,6 +42,10 @@ const Report: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
+  
+  const reportRef = useRef<HTMLDivElement>(null);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
   
   // Redirect if no fileId is set
   useEffect(() => {
@@ -80,10 +88,27 @@ const Report: React.FC = () => {
     fetchData();
   }, [fileId, reportData, setReportData, retryCount]);
   
-  // Download report as PDF (placeholder function)
-  const handleDownloadReport = () => {
-    // This would be implemented with a library like jsPDF
-    alert('Download report functionality would be implemented here');
+  // Handle download menu
+  const handleMenuClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+  
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+  
+  const handleDownloadAsImage = () => {
+    downloadAsPDF(reportRef.current, 'business-report', 'Business Intelligence Report');
+    handleMenuClose();
+  };
+  
+  const handleDownloadAsPDF = () => {
+    // Parse the report data
+    if (reportData) {
+      const parsedReport: ReportData = JSON.parse(reportData);
+      downloadReportAsPDF(parsedReport, 'business-report');
+    }
+    handleMenuClose();
   };
   
   // Render loading state
@@ -92,7 +117,8 @@ const Report: React.FC = () => {
       <Container maxWidth="lg" sx={{ textAlign: 'center', py: 8 }}>
         <CircularProgress size={60} />
         <Typography variant="h6" sx={{ mt: 2 }}>
-          Generating AI business report...
+          Generating AI business report... <br/>
+          Wait about 1-2 minutes.
         </Typography>
         <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
           This may take a few moments as we analyze your data and create insights.
@@ -151,7 +177,7 @@ const Report: React.FC = () => {
   
   return (
     <Container maxWidth="lg">
-      <Paper elevation={3} sx={{ p: 4, mb: 4, position: 'relative' }}>
+      <Paper elevation={3} sx={{ p: 4, mb: 4, position: 'relative' }} ref={reportRef}>
         <Typography variant="h4" component="h1" gutterBottom align="center">
           Business Intelligence Report
         </Typography>
@@ -159,14 +185,32 @@ const Report: React.FC = () => {
           AI-generated insights and recommendations based on your sales data
         </Typography>
         
-        <Button
-          variant="outlined"
-          startIcon={<DownloadIcon />}
-          onClick={handleDownloadReport}
-          sx={{ position: 'absolute', top: 20, right: 20 }}
-        >
-          Download Report
-        </Button>
+        <Box sx={{ position: 'absolute', top: 20, right: 20 }}>
+          <Button
+            variant="outlined"
+            startIcon={<DownloadIcon />}
+            onClick={handleMenuClick}
+          >
+            Download Report
+          </Button>
+          <Menu
+            anchorEl={anchorEl}
+            open={open}
+            onClose={handleMenuClose}
+            MenuListProps={{
+              'aria-labelledby': 'download-button',
+            }}
+          >
+            <MenuItem onClick={handleDownloadAsImage}>
+              <PictureAsPdfIcon fontSize="small" sx={{ mr: 1 }} />
+              Download as Enhanced PDF
+            </MenuItem>
+            <MenuItem onClick={handleDownloadAsPDF}>
+              <PictureAsPdfIcon fontSize="small" sx={{ mr: 1 }} />
+              Download as PDF Document
+            </MenuItem>
+          </Menu>
+        </Box>
         
         <Divider sx={{ mb: 4 }} />
         
