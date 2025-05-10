@@ -73,7 +73,7 @@ const Forecast: React.FC = () => {
         <CircularProgress size={60} />
         <Typography variant="h6" sx={{ mt: 2 }}>
         Hang tight! We’re generating your sales forecast. <br/> 
-        This usually takes about 1–2 minutes.
+        This usually takes about 1–3 minutes.
         </Typography>
         {retryCount > 0 && (
           <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>

@@ -3,14 +3,10 @@
 API route definitions for the FastAPI application.
 """
 from fastapi import APIRouter, UploadFile, File, HTTPException
-from fastapi.responses import JSONResponse
-from typing import List, Dict, Any
 import os
 import pandas as pd
-import numpy as np
-import joblib
 from pathlib import Path
-import matplotlib.pyplot as plt
+from datetime import datetime
 
 # Import services
 from services.data_cleaning import DataCleaner
@@ -504,6 +500,8 @@ async def get_top_products(file_id: str):
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Error analyzing products: {str(e)}")
 
+# Update this section in backend/api/routes.py
+
 @router.post("/report/{file_id}")
 async def generate_report(file_id: str):
     """Generates AI business report."""
@@ -519,136 +517,48 @@ async def generate_report(file_id: str):
         if metadata["status"] not in valid_statuses:
             raise HTTPException(status_code=400, detail="Required analysis has not been performed yet")
         
-        # Load processed data
-        processed_file_path = metadata["processed_file_path"]
-        data = pd.read_csv(processed_file_path)
-        
-        # Get best model information
-        best_model = metadata.get("best_model", "unknown")
-        model_metrics = metadata.get("model_metrics", {})
-        
-        # Get top products
-        top_products = metadata.get("top_products", [])
-        
-        # Generate report based on actual data characteristics
-        
-        # Check if we have date information for time-based insights
-        has_time_data = False
-        day_of_week_col = None
-        time_of_day_col = None
-        
-        for col in ['day_of_week', 'weekday']:
-            if col in data.columns:
-                day_of_week_col = col
-                has_time_data = True
-                break
-        
-        for col in ['hour', 'time_of_day']:
-            if col in data.columns:
-                time_of_day_col = col
-                has_time_data = True
-                break
-        
-        # Generate insights based on available data
-        insights = []
-        
-        # Top products insight
-        if top_products:
-            insights.append(f"Your top product {top_products[0]} is your revenue leader")
-            if len(top_products) > 1:
-                insights.append(f"Your top 5 products ({', '.join(top_products[:5])}) contribute significantly to your overall revenue")
-        
-        # Time-based insights
-        if has_time_data:
-            if day_of_week_col:
-                # Calculate sales by day of week
-                day_sales = data.groupby(day_of_week_col)['total_price'].sum().reset_index()
-                day_sales['percentage'] = (day_sales['total_price'] / day_sales['total_price'].sum()) * 100
-                
-                # Find busiest and slowest days
-                day_mapping = {0: 'Monday', 1: 'Tuesday', 2: 'Wednesday', 3: 'Thursday', 
-                              4: 'Friday', 5: 'Saturday', 6: 'Sunday'}
-                
-                day_sales = day_sales.sort_values(by='total_price', ascending=False)
-                busiest_day = day_mapping.get(day_sales.iloc[0][day_of_week_col], str(day_sales.iloc[0][day_of_week_col]))
-                slowest_day = day_mapping.get(day_sales.iloc[-1][day_of_week_col], str(day_sales.iloc[-1][day_of_week_col]))
-                
-                insights.append(f"{busiest_day} is your busiest day with {day_sales.iloc[0]['percentage']:.1f}% of weekly sales")
-                insights.append(f"{slowest_day} is your slowest day and could benefit from targeted promotions")
-            
-            if time_of_day_col:
-                # If we have hour data, identify peak hours
-                if time_of_day_col == 'hour':
-                    hour_sales = data.groupby(time_of_day_col)['total_price'].sum().reset_index()
-                    hour_sales = hour_sales.sort_values(by='total_price', ascending=False)
-                    
-                    peak_hour = hour_sales.iloc[0][time_of_day_col]
-                    insights.append(f"Your peak revenue hour is around {peak_hour}:00")
-                elif time_of_day_col == 'time_of_day':
-                    time_sales = data.groupby(time_of_day_col)['total_price'].sum().reset_index()
-                    time_sales = time_sales.sort_values(by='total_price', ascending=False)
-                    
-                    peak_time = time_sales.iloc[0][time_of_day_col]
-                    insights.append(f"Your {peak_time} period generates the most revenue")
-        
-        # Model performance insight
-        if model_metrics:
-            rmse = model_metrics.get("rmse")
-            r2 = model_metrics.get("r2")
-            
-            if r2:
-                accuracy_pct = r2 * 100
-                insights.append(f"Sales forecasting achieved {accuracy_pct:.1f}% accuracy using the {best_model} model")
-        
-        # If we don't have enough real insights, add some placeholders
-        if len(insights) < 3:
-            insights.extend([
-                "Analyze your menu periodically to maintain focus on high-performing items",
-                "Consider seasonal promotions to boost sales during slower periods",
-                "Monitor inventory closely to reduce waste and optimize ordering"
-            ])
-        
-        # Generate recommendations based on insights
-        recommendations = []
-        
-        # Product recommendations
-        if top_products:
-            recommendations.append("Focus marketing efforts on your top-performing products to maximize returns")
-            recommendations.append("Consider bundling top products with lower-performing items to increase overall sales")
-        
-        # Time-based recommendations
-        if has_time_data and day_of_week_col:
-            recommendations.append(f"Implement special promotions on {slowest_day} to increase customer traffic")
-        
-        if has_time_data and time_of_day_col:
-            recommendations.append("Ensure adequate staffing during peak hours to maximize service quality and revenue")
-        
-        # General recommendations
-        recommendations.append("Regularly review sales data to identify emerging trends and adjust your strategy accordingly")
-        recommendations.append("Use the sales forecast to optimize inventory management and reduce waste")
-        
-        # Future outlook - based on the model prediction trend
-        trend_direction = "upward" if metadata.get("trend", "") == "up" else "downward" if metadata.get("trend", "") == "down" else "stable"
-        future_outlook = f"Based on the {best_model} model analysis, sales are showing a {trend_direction} trend. "
-        
-        if trend_direction == "upward":
-            future_outlook += "Consider investing in additional capacity and staff training to meet increased demand."
-        elif trend_direction == "downward":
-            future_outlook += "Focus on marketing and customer retention strategies to reverse this trend."
+        # Get forecast data if not already generated
+        forecast_data = {}
+        if "forecast_data" not in metadata or not metadata["forecast_data"]:
+            # Call the forecast endpoint to get the data
+            try:
+                forecast_data = await get_forecast(file_id)
+            except Exception as e:
+                print(f"Error getting forecast data: {str(e)}")
+                # Continue with limited data
         else:
-            future_outlook += "Maintain current operations while looking for opportunities to increase efficiency and profit margins."
+            # Use cached forecast data
+            forecast_data = metadata.get("forecast_data", {})
         
-        # Create the final report
-        report = {
-            "summary": f"Analysis of your restaurant sales data reveals important patterns and opportunities for growth. The {best_model} model provided the most accurate sales forecasts, and your top products contribute significantly to your bottom line.",
-            "insights": insights,
-            "recommendations": recommendations,
-            "future_outlook": future_outlook
-        }
+        # Get product data if not already generated
+        products_data = {}
+        if "products_data" not in metadata or not metadata["products_data"]:
+            # Call the products endpoint to get the data
+            try:
+                products_data = await get_top_products(file_id)
+            except Exception as e:
+                print(f"Error getting products data: {str(e)}")
+                # Continue with limited data
+        else:
+            # Use cached product data
+            products_data = metadata.get("products_data", {})
+        
+        # Generate AI-powered report
+        from services.ai_report_generation import AIReportGenerator
+        report_generator = AIReportGenerator()
+        report = report_generator.generate_report(forecast_data, products_data)
+        
+        # Update metadata with forecast and product data for caching
+        if forecast_data and "forecast_data" not in metadata:
+            metadata["forecast_data"] = forecast_data
+        
+        if products_data and "products_data" not in metadata:
+            metadata["products_data"] = products_data
         
         # Update metadata
         metadata.update({
-            "status": "report_generated"
+            "status": "report_generated",
+            "report_generated_at": datetime.now().isoformat()
         })
         save_processing_metadata(file_id, metadata)
         
