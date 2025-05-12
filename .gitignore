@@ -45,6 +45,7 @@ coverage.xml
 *.xlsx
 *.json
 !package.json
+!tsconfig.node.json
 !package-lock.json
 !tsconfig.json
 !vite.config.ts
