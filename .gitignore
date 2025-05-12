@@ -44,6 +44,10 @@ coverage.xml
 *.csv
 *.xlsx
 *.json
+!package.json
+!package-lock.json
+!tsconfig.json
+!vite.config.ts
 backend/data/*
 backend/plots/*
 !backend/data/sample_dataset.csv
