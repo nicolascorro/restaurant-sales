@@ -13,7 +13,7 @@ app = FastAPI(title="Restaurant Sales Prediction API")
 # Configure CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Frontend URL
+    allow_origins=["https://restaurant-sales.vercel.app/", "http://localhost:3000"],  # Frontend URL
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
