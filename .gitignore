@@ -52,12 +52,12 @@ coverage.xml
 backend/data/*
 backend/plots/*
 !backend/data/sample_dataset.csv
-backend/.env
+
 
 # React / Node
 /frontend/node_modules/
 /frontend/build
-/frontend/.env.production
+
 .DS_Store
 .env.local
 .env.development.local
