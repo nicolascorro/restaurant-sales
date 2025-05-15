@@ -159,7 +159,7 @@ class FeatureEngineer:
         
         # Convert all feature columns to numeric
         for col in X.columns:
-            X[col] = pd.to_numeric(X[col], errors='coerce')
+            X.loc[:, col] = pd.to_numeric(X[col], errors='coerce')
         
         # Fill any NaN values with 0
         X = X.fillna(0)
