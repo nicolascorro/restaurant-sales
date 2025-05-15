@@ -1,9 +1,9 @@
 // src/pages/Report.tsx
 import React, { useEffect, useState, useRef } from 'react';
-import { 
-  Container, 
-  Typography, 
-  Paper, 
+import {
+  Container,
+  Typography,
+  Paper,
   CircularProgress,
   Alert,
   Button,
@@ -43,18 +43,18 @@ const Report: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
-  
+
   const reportRef = useRef<HTMLDivElement>(null);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
-  
+
   // Redirect if no fileId is set
   useEffect(() => {
     if (!fileId) {
       navigate('/upload');
     }
   }, [fileId, navigate]);
-  
+
   // Generate report if needed
   useEffect(() => {
     const fetchData = async () => {
@@ -62,17 +62,17 @@ const Report: React.FC = () => {
         try {
           setLoading(true);
           setError(null);
-          
+
           const data = await generateReport(fileId);
           setReportData(JSON.stringify(data.report));
           setRetryCount(0); // Reset retry count on success
-          
+
         } catch (err: any) {
           console.error('Error generating report:', err);
           // Extract error message from response if available
           const errorMessage = err.response?.data?.detail || 'Failed to generate AI business report. The server may still be processing your data. Please try again.';
           setError(errorMessage);
-          
+
           // If the error is about required analysis, we might want to retry
           if ((errorMessage.includes("not been processed") || errorMessage.includes("Required analysis")) && retryCount < 3) {
             // Wait 2 seconds before retrying
@@ -85,24 +85,24 @@ const Report: React.FC = () => {
         }
       }
     };
-    
+
     fetchData();
   }, [fileId, reportData, setReportData, retryCount]);
-  
+
   // Handle download menu
   const handleMenuClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
   };
-  
+
   const handleMenuClose = () => {
     setAnchorEl(null);
   };
-  
+
   const handleDownloadAsImage = () => {
     downloadAsPDF(reportRef.current, 'ai-business-report', 'AI Business Intelligence Report');
     handleMenuClose();
   };
-  
+
   const handleDownloadAsPDF = () => {
     // Parse the report data
     if (reportData) {
@@ -111,15 +111,23 @@ const Report: React.FC = () => {
     }
     handleMenuClose();
   };
-  
+
   // Render loading state
   if (loading) {
     return (
       <Container maxWidth="lg" sx={{ textAlign: 'center', py: 8 }}>
         <CircularProgress size={60} />
         <Typography variant="h6" sx={{ mt: 2 }}>
-          AI is analyzing your data and generating insights... <br/>
-          Please wait 1-5 minutes.
+          Creating your AI-powered business report... This is the most intensive analysis and may take a while. <br />
+          <br />
+
+          Estimated time based on file size: <br />
+          - Small datasets: 2-3 minutes <br />
+          - Medium datasets: 10-15 minutes <br />
+          - Large datasets: 20-30+ minutes <br />
+          <br />
+
+          Our system is analyzing patterns in your data and generating personalized business insights. Larger files contain more information to process but provide more comprehensive results.
         </Typography>
         <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
           Our AI is examining your sales patterns, product performance, and forecasts to create a comprehensive business report.
@@ -132,7 +140,7 @@ const Report: React.FC = () => {
       </Container>
     );
   }
-  
+
   // Render error state
   if (error) {
     return (
@@ -141,14 +149,14 @@ const Report: React.FC = () => {
           {error}
         </Alert>
         <Box sx={{ display: 'flex', gap: 2 }}>
-          <Button 
-            variant="contained" 
+          <Button
+            variant="contained"
             onClick={() => navigate('/forecast')}
           >
             View Forecast First
           </Button>
           {retryCount < 3 && (
-            <Button 
+            <Button
               variant="outlined"
               onClick={() => setRetryCount(prev => prev + 1)}
             >
@@ -159,7 +167,7 @@ const Report: React.FC = () => {
       </Container>
     );
   }
-  
+
   // Parse the report data
   const parsedReport: ReportData = reportData ? JSON.parse(reportData) : {
     summary: "This is a placeholder for the AI-generated business summary...",
@@ -175,7 +183,7 @@ const Report: React.FC = () => {
     ],
     future_outlook: "Placeholder for future outlook analysis..."
   };
-  
+
   return (
     <Container maxWidth="lg">
       <Paper elevation={3} sx={{ p: 4, mb: 4, position: 'relative' }} ref={reportRef}>
@@ -188,7 +196,7 @@ const Report: React.FC = () => {
         <Typography variant="subtitle1" paragraph align="center" sx={{ mb: 3 }}>
           Data-driven insights and recommendations generated by artificial intelligence
         </Typography>
-        
+
         <Box sx={{ position: 'absolute', top: 20, right: 20 }}>
           <Button
             variant="outlined"
@@ -215,9 +223,9 @@ const Report: React.FC = () => {
             </MenuItem>
           </Menu>
         </Box>
-        
+
         <Divider sx={{ mb: 4 }} />
-        
+
         <Box sx={{ mb: 4 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
             <TrendingUpIcon sx={{ color: 'primary.main', fontSize: 24, mr: 1 }} />
@@ -232,7 +240,7 @@ const Report: React.FC = () => {
             {parsedReport.summary}
           </Typography>
         </Box>
-        
+
         <Box sx={{ mb: 4 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
             <LightbulbIcon sx={{ color: 'primary.main', fontSize: 24, mr: 1 }} />
@@ -243,16 +251,16 @@ const Report: React.FC = () => {
               <HelpOutlineIcon sx={{ ml: 1, color: 'text.secondary', fontSize: 18 }} />
             </Tooltip>
           </Box>
-          
+
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
             {parsedReport.insights.map((insight: string, index: number) => (
               <Card variant="outlined" key={index} sx={{ flex: '1 1 45%', minWidth: 250 }}>
                 <CardContent>
                   <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
-                    <Chip 
-                      label={`#${index + 1}`} 
-                      color="primary" 
-                      size="small" 
+                    <Chip
+                      label={`#${index + 1}`}
+                      color="primary"
+                      size="small"
                       sx={{ mr: 1, mt: 0.5 }}
                     />
                     <Typography variant="body1">{insight}</Typography>
@@ -262,7 +270,7 @@ const Report: React.FC = () => {
             ))}
           </Box>
         </Box>
-        
+
         <Box sx={{ mb: 4 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
             <RecommendIcon sx={{ color: 'primary.main', fontSize: 24, mr: 1 }} />
@@ -273,16 +281,16 @@ const Report: React.FC = () => {
               <HelpOutlineIcon sx={{ ml: 1, color: 'text.secondary', fontSize: 18 }} />
             </Tooltip>
           </Box>
-          
+
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
             {parsedReport.recommendations.map((recommendation: string, index: number) => (
               <Card variant="outlined" key={index} sx={{ flex: '1 1 45%', minWidth: 250 }}>
                 <CardContent>
                   <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
-                    <Chip 
-                      label={`#${index + 1}`} 
-                      color="secondary" 
-                      size="small" 
+                    <Chip
+                      label={`#${index + 1}`}
+                      color="secondary"
+                      size="small"
                       sx={{ mr: 1, mt: 0.5 }}
                     />
                     <Typography variant="body1">{recommendation}</Typography>
@@ -292,7 +300,7 @@ const Report: React.FC = () => {
             ))}
           </Box>
         </Box>
-        
+
         <Box>
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
             <TimelineIcon sx={{ color: 'primary.main', fontSize: 24, mr: 1 }} />
@@ -309,7 +317,7 @@ const Report: React.FC = () => {
             </Typography>
           </Paper>
         </Box>
-        
+
         <Box sx={{ mt: 4, pt: 3, borderTop: '1px dashed rgba(0, 0, 0, 0.12)' }}>
           <Typography variant="caption" color="text.secondary" align="center" display="block">
             This report was generated by an AI assistant analyzing your restaurant's sales data.
