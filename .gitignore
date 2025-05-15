@@ -50,7 +50,6 @@ coverage.xml
 !tsconfig.json
 !vite.config.ts
 backend/data/*
-backend/.env
 backend/plots/*
 !backend/data/sample_dataset.csv
 
