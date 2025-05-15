@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      '@': '/src', // This uses an absolute path which works in Vite
+      '@': '/src',
     },
   },
   server: {

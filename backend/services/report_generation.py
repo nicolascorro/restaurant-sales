@@ -13,9 +13,7 @@ class ReportGenerator:
     def __init__(self):
         load_dotenv()
         self.api_key = os.getenv("OPENAI_API_KEY")
-        # TODO: Configure OpenAI client
     
     def generate_report(self, forecast_data: dict, products_data: dict) -> str:
         """Generates comprehensive report based on analysis results."""
-        # TODO: Implement report generation logic
         pass

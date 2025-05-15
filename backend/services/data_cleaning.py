@@ -142,8 +142,6 @@ class DataCleaner:
     
     def encode_categorical_variables(self, df: pd.DataFrame) -> pd.DataFrame:
         """Encodes categorical variables for ML models."""
-        # This will be implemented when preparing data for specific ML models
-        # We'll use one-hot encoding or label encoding as appropriate
         pass
     
     def get_clean_data(self) -> pd.DataFrame:

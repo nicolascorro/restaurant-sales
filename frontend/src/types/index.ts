@@ -28,7 +28,6 @@ export interface PredictionResult {
   confidence_interval?: number[];
 }
 
-// Frontend-specific types
 export interface ForecastChartData {
   date: string;
   actual?: number;

@@ -1,11 +1,7 @@
 // src/utils/helpers.ts
 
-/**
- * Formats a number as a currency string
- * @param value Number to format
- * @param currency Currency code
- * @returns Formatted currency string
- */
+
+ // Formats a number as a currency string
 export const formatCurrency = (value: number, currency = 'USD'): string => {
     return new Intl.NumberFormat('en-US', { 
       style: 'currency', 
@@ -14,12 +10,8 @@ export const formatCurrency = (value: number, currency = 'USD'): string => {
     }).format(value);
   };
   
-  /**
-   * Formats a date string to a more readable format
-   * @param dateString Date string to format
-   * @param format Format style
-   * @returns Formatted date string
-   */
+
+   // Formats a date string to a more readable format
   export const formatDate = (
     dateString: string, 
     format: 'short' | 'medium' | 'long' = 'medium'
@@ -46,11 +38,8 @@ export const formatCurrency = (value: number, currency = 'USD'): string => {
     }
   };
   
-  /**
-   * Converts a CSV string to an array of objects
-   * @param csv CSV string to parse
-   * @returns Array of objects representing the CSV data
-   */
+
+   // Converts a CSV string to an array of objects
   export const csvToJson = (csv: string): any[] => {
     const lines = csv.split('\n');
     const result = [];
@@ -73,24 +62,17 @@ export const formatCurrency = (value: number, currency = 'USD'): string => {
     return result;
   };
   
-  /**
-   * Calculates the percentage change between two values
-   * @param oldValue Original value
-   * @param newValue New value
-   * @returns Percentage change
-   */
+
+   // Calculates the percentage change between two values
+
   export const calculatePercentageChange = (oldValue: number, newValue: number): number => {
     if (oldValue === 0) return newValue > 0 ? 100 : 0;
     return ((newValue - oldValue) / Math.abs(oldValue)) * 100;
   };
   
-  /**
-   * Takes an array and returns the top N items
-   * @param array Array to get top items from
-   * @param n Number of items to return
-   * @param sortKey Key to sort by (if array contains objects)
-   * @returns Top N items
-   */
+
+   // Takes an array and returns the top N items
+
   export const getTopItems = <T>(array: T[], n: number, sortKey?: keyof T): T[] => {
     if (!Array.isArray(array) || array.length === 0) return [];
     
@@ -111,19 +93,15 @@ export const formatCurrency = (value: number, currency = 'USD'): string => {
     return sortedArray.slice(0, n);
   };
   
-  /**
-   * Generates a random color
-   * @returns Random hex color string
-   */
+
+   // Generates a random color
+
   export const getRandomColor = (): string => {
     return `#${Math.floor(Math.random() * 16777215).toString(16)}`;
   };
   
-  /**
-   * Simulates a delay (useful for testing loading states)
-   * @param ms Milliseconds to delay
-   * @returns Promise that resolves after the delay
-   */
+
+   // Simulates a delay (useful for testing loading states)
   export const delay = (ms: number): Promise<void> => {
     return new Promise(resolve => setTimeout(resolve, ms));
   };

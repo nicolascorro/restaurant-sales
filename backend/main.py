@@ -10,7 +10,7 @@ from api.routes import router
 
 app = FastAPI(title="Restaurant Sales Prediction API")
 
-# Configure CORS middleware
+# CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["https://restaurant-sales.vercel.app", "http://localhost:3000"],  # Frontend URL
@@ -19,7 +19,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include the router with correct prefix
 app.include_router(router)
 
 if __name__ == "__main__":

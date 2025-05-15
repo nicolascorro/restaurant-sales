@@ -13,10 +13,8 @@ class VisualizationService:
     def generate_forecast_data(self, predictions: np.ndarray, 
                              dates: list, historical_data: pd.DataFrame) -> dict:
         """Creates data structure for sales forecast chart."""
-        # TODO: Implement forecast chart data generation
         pass
     
     def generate_top_products_data(self, sales_data: pd.DataFrame) -> dict:
         """Creates data structure for best-selling products pie chart."""
-        # TODO: Implement pie chart data generation
         pass

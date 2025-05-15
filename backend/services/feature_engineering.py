@@ -64,9 +64,6 @@ class FeatureEngineer:
             # Calculate rolling averages
             daily_sales['rolling_7day_avg'] = daily_sales['daily_total_sales'].rolling(window=7).mean()
             daily_sales['rolling_30day_avg'] = daily_sales['daily_total_sales'].rolling(window=30).mean()
-            
-            # Merge back to original dataframe if needed
-            # df = df.merge(daily_sales, left_on='order_date', right_on='date', how='left')
         
         # Product popularity features based on actual column names
         if 'pizza_name' in df.columns or 'pizza_id' in df.columns:
@@ -103,7 +100,6 @@ class FeatureEngineer:
                     df[f'{col}_encoded'] = df[f'{col}_encoded'].fillna(-1).astype(int)
                     self.encoders[col] = size_order
                 else:
-                    # Use one-hot encoding for nominal data
                     # First check if the column has too many unique values
                     n_unique = df[col].nunique()
                     if n_unique > 50:  # Too many for one-hot encoding

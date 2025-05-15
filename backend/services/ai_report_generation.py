@@ -46,7 +46,7 @@ class AIReportGenerator:
             }
             
             data = {
-                "model": "claude-3-opus-20240229",  # Use Claude's most capable model
+                "model": "claude-3-opus-20240229",
                 "max_tokens": 1500,
                 "messages": [
                     {
@@ -138,7 +138,7 @@ class AIReportGenerator:
                 for i, product in enumerate(top_products):
                     prompt += f"  - #{i+1}: {product.get('name', '')}, Category: {product.get('category', '')}, Revenue: ${product.get('revenue', 0):.2f}, Percentage: {product.get('percentage', 0):.1f}%\n"
         
-        # Add instructions for the AI
+        # instructions for the AI
         prompt += "\n## REPORT STRUCTURE\n"
         prompt += "Please generate a comprehensive business report with the following sections:\n"
         prompt += "1. SUMMARY: A concise overview of the restaurant's sales performance and key findings.\n"

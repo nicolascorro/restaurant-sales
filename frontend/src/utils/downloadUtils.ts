@@ -1,15 +1,12 @@
 // src/utils/downloadUtils.ts
 import { toPng, toJpeg } from 'html-to-image';
 import jsPDF from 'jspdf';
-// @ts-ignore - jspdf-autotable doesn't have proper TypeScript definitions
 import 'jspdf-autotable';
 import { ProductDetail } from '../types';
 
-/**
- * Converts an HTML element to a PNG and downloads it
- * @param element DOM element to convert to PNG
- * @param fileName Filename for the downloaded image
- */
+
+ //Converts an HTML element to a PNG and downloads it
+
 export const downloadAsImage = async (
   element: HTMLElement | null,
   fileName: string
@@ -36,12 +33,9 @@ export const downloadAsImage = async (
   }
 };
 
-/**
- * Converts an HTML element to a PDF and downloads it
- * @param element DOM element to convert to PDF
- * @param fileName Filename for the downloaded PDF
- * @param title Optional title to include in the PDF
- */
+
+ //Converts an HTML element to a PDF and downloads it
+
 export const downloadAsPDF = async (
   element: HTMLElement | null,
   fileName: string,
@@ -60,7 +54,6 @@ export const downloadAsPDF = async (
     });
 
     // Create a new PDF document
-    // @ts-ignore - jsPDF types don't match implementation
     const pdf = new jsPDF({
       orientation: 'portrait',
       unit: 'mm',
@@ -98,11 +91,7 @@ export const downloadAsPDF = async (
   }
 };
 
-/**
- * Generates a report PDF from text content
- * @param reportData Report data to convert to PDF
- * @param fileName Filename for the downloaded PDF
- */
+ //Generates a report PDF from text content
 export const downloadReportAsPDF = (
   reportData: {
     summary: string;
@@ -113,7 +102,6 @@ export const downloadReportAsPDF = (
   fileName: string
 ): void => {
   // Create a new PDF document
-  // @ts-ignore - jsPDF types don't include all the actual properties
   const pdf = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
@@ -183,7 +171,6 @@ export const downloadReportAsPDF = (
   yPosition += 5;
 
   // Add future outlook
-  // Check if we need a new page
   if (yPosition > 240) {
     pdf.addPage();
     yPosition = 20;
@@ -209,11 +196,9 @@ export const downloadReportAsPDF = (
   pdf.save(`${fileName}.pdf`);
 };
 
-/**
- * Converts product data to CSV and downloads it
- * @param productDetails Array of product details
- * @param fileName Filename for the downloaded CSV
- */
+
+ // Converts product data to CSV and downloads it
+
 export const downloadProductsAsCSV = (
   productDetails: ProductDetail[],
   fileName: string

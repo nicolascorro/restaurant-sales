@@ -178,8 +178,6 @@ async def get_forecast(file_id: str):
             print(f"Error saving plot: {str(plot_error)}")
         
         # Create forecast data for visualization
-        # For actual forecast, we'd use the best model to predict future periods
-        # For now, we'll use the test predictions for visualization
         date_column = None
         for col in ['order_date', 'datetime', 'date']:
             if col in data.columns:
@@ -198,7 +196,7 @@ async def get_forecast(file_id: str):
                 date_data = data[date_mask]
                 
                 if len(date_data) > 0:
-                    # For actual values, use the sum of total_price for that date
+                    # use the sum of total_price for that date
                     total_price_col = None
                     for col in ['total_price', 'price', 'revenue']:
                         if col in date_data.columns:
@@ -207,8 +205,6 @@ async def get_forecast(file_id: str):
                     
                     actual_value = date_data[total_price_col].sum() if total_price_col else None
                     
-                    # For prediction, we would ideally predict future dates
-                    # For demonstration, we'll use our model to predict these dates
                     X_date = X[date_mask]
                     if len(X_date) > 0:
                         try:
@@ -499,8 +495,6 @@ async def get_top_products(file_id: str):
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Error analyzing products: {str(e)}")
-
-# Update this section in backend/api/routes.py
 
 @router.post("/report/{file_id}")
 async def generate_report(file_id: str):
