@@ -50,6 +50,7 @@ coverage.xml
 !tsconfig.json
 !vite.config.ts
 backend/data/*
+backend/.env
 backend/plots/*
 !backend/data/sample_dataset.csv
 
@@ -57,6 +58,7 @@ backend/plots/*
 # React / Node
 /frontend/node_modules/
 /frontend/build
+/frontend/.env.production
 
 .DS_Store
 .env.local
