@@ -5,7 +5,7 @@ const getBaseUrl = () => {
   if (import.meta.env.MODE === 'production') {
     return 'https://restaurant-sales.onrender.com';  // Production backend URL
   }
-  return '';  // In development, use relative URLs that go through the Vite proxy
+  return '/api';  // In development, it uses relative URLs that go through the Vite proxy
 };
 
 // default config
